@@ -1,0 +1,94 @@
+#ifndef PERSISTENCIAMATERIALES_H
+#define PERSISTENCIAMATERIALES_H
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include "Material.h"
+#include "PersistenceUtils.h"
+#include "Vector.h"
+#include "Queue.h"
+#include "PriorityQueue.h"
+
+using namespace std;
+
+// Sobrecarga del operador de entrada >>
+istream& operator>>(istream& in, Material& material) {
+    string line;
+    if (!getline(in, line)) return in;
+
+    if (line.front() == '[') line.erase(0, 1);
+    if (line.back() == ']') line.pop_back();
+
+    stringstream ss(line);
+    string prioridadStr, idStr, nombre, tipo;
+
+    if (!getline(ss, prioridadStr, ',')) return in;
+    if (!getline(ss, idStr, ',')) return in;
+    if (!getline(ss >> ws, nombre, ',')) return in;
+    if (!getline(ss >> ws, tipo)) return in;
+
+    nombre.erase(0, nombre.find_first_not_of(" \t"));
+    tipo.erase(0, tipo.find_first_not_of(" \t"));
+
+    int prioridad = stoi(prioridadStr);
+    int id = stoi(idStr);
+
+    material = Material(prioridad, id, nombre, tipo);
+    return in;
+}
+/ Sobrecarga del operador de salida <<
+ostream& operator<<(ostream& out, const Material& material) {
+    out << "[" << material.getPrioridad() << ", "
+        << material.getId() << ", "
+        << material.getNombre() << ", "
+        << material.getTipo() << "]";
+    return out;
+}
+
+// Función para cargar en Vector
+void cargarEnVector(Vector<Material>& vec, const string& filename = "materiales.txt") {
+    try {
+        PersistenceUtils::loadVector(vec, filename);
+        cout << "Materiales cargados en Vector:\n";
+        for (int i = 0; i < vec.getSize(); ++i) {
+            cout << vec.at(i) << endl;
+        }
+    } catch (const exception& e) {
+        cerr << "Error al cargar Vector: " << e.what() << endl;
+    }
+}
+
+// Función para cargar en Queue
+void cargarEnQueue(Queue<Material>& queue, const string& filename = "materiales.txt") {
+    Vector<Material> temp;
+    PersistenceUtils::loadVector(temp, filename);
+
+    for (int i = 0; i < temp.getSize(); ++i) {
+        queue.enqueue(temp.at(i));
+    }
+
+    cout << "Materiales cargados en Queue:\n";
+    while (!queue.isEmpty()) {
+        cout << queue.front() << endl;
+        queue.dequeue();
+    }
+}
+
+// Función para cargar en PriorityQueue (menor prioridad = mayor importancia)
+void cargarEnPriorityQueue(PriorityQueue<Material>& pq, const string& filename = "materiales.txt") {
+    Vector<Material> temp;
+    PersistenceUtils::loadVector(temp, filename);
+
+    for (int i = 0; i < temp.getSize(); ++i) {
+        pq.enqueue(temp.at(i), temp.at(i).getPrioridad());
+    }
+
+    cout << "Materiales cargados en PriorityQueue:\n";
+    while (!pq.isEmpty()) {
+        cout << pq.front() << endl;
+        pq.dequeue();
+    }
+}
+
+#endif // PERSISTENCIAMATERIALES_H
