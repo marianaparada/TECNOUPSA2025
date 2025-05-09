@@ -12,7 +12,7 @@ int main() {
     Vector<Material> materialesVector;
     Queue<Material> materialesQueue;
     PriorityQueue<Material> materialesPQ;
-
+    //prueba
     cargarEnVector(materialesVector);
     cout << endl;
 
